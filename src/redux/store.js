@@ -8,10 +8,11 @@ import { middleware as ui } from "./ui/middleware";
 import { middleware as api } from "./api/middleware";
 import { middleware as rest } from "./rest/middleware";
 import { middleware as route } from "./routing/middleware";
+import { middleware as scan } from "./scan/middleware";
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-let mdw = [api, rest, ...ui, ...route, ...autorizacion];
+let mdw = [api, rest, ...ui, ...route, ...autorizacion, ...scan];
 
 if (process.env.NODE_ENV !== "production") {
     mdw = [...mdw, logger];

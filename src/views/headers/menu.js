@@ -13,6 +13,7 @@ import { MENU, RIGHT, PERSON } from "../../../assets/icons/svgs";
 import { logout } from "../../redux/autorizacion/actions";
 import { gesturesController } from "@brunomon/template-lit/src/views/controllers/gesturesController";
 import { selection } from "../../redux/ui/actions";
+import { getID } from "../../redux/scan/actions";
 
 const MEDIA_CHANGE = "ui.media.timeStamp";
 const SELECTION = "ui.menu.timeStamp";
@@ -26,7 +27,7 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
         this.visible = false;
         this.arrastrando = false;
         this.usuario = null;
-        this.optionsCount = 4;
+        this.optionsCount = 2;
         this.defaultOption = 0;
         this.selectedOption = new Array(this.optionsCount).fill(false);
         this.selectedOption[this.defaultOption] = true;
@@ -171,10 +172,10 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
 
             <div id="opciones" class="grid column" @click=${this.toggleMenu}>
                 <button raised circle action class="menu-button">${RIGHT}</button>
-                <button link ?selected="${this.selectedOption[0]}" @click=${this.click} .option=${"opcion0"}>Opcion 0</button>
-                <button link ?selected="${this.selectedOption[1]}" @click=${this.click} .option=${"opcion1"}>Opcion 1</button>
-                <button link ?selected="${this.selectedOption[2]}" @click=${this.click} .option=${"opcion2"}>Opcion 2</button>
-                <button link etiqueta ?selected="${this.selectedOption[3]}" @click=${this.click} .option=${"opcion3"}>
+
+                <button link ?selected="${this.selectedOption[0]}" @click=${this.click} .option=${"scanId"}>Scanner ID</button>
+
+                <button link etiqueta ?selected="${this.selectedOption[1]}" @click=${this.click} .option=${"opcion3"}>
                     <div>${PERSON}</div>
                     <div class="justify-self-start">Login</div>
                 </button>
@@ -208,11 +209,8 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
     }
 
     click(e) {
-        if (e.currentTarget.option == "logout") {
-            try {
-                navigator.credentials.preventSilentAccess();
-            } catch {}
-            store.dispatch(logout());
+        if (e.currentTarget.option == "scanId") {
+            store.dispatch(getID());
             return;
         }
 
@@ -220,6 +218,7 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
         this.selectedOption[Array.from(e.currentTarget.parentNode.children).indexOf(e.currentTarget) - 1] = true;
 
         store.dispatch(selection(e.currentTarget.option));
+
         store.dispatch(goTo(e.currentTarget.option));
     }
 

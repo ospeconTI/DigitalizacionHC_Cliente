@@ -10,6 +10,9 @@ import { formTest } from "./componentes/formTest";
 import { menuPrincipal } from "./headers/menu";
 import { spinner } from "@brunomon/template-lit/src/views/css/spinner";
 import { gridLayout } from "@brunomon/template-lit/src/views/css/gridLayout";
+import { formScaneo } from "./pantallas/formEscaneo";
+import { scannerID } from "./componentes/scannerID";
+import { AlertControl } from "./componentes/alert";
 
 const MEDIA_CHANGE = "ui.media.timeStamp";
 const SCREEN = "screen.timeStamp";
@@ -57,7 +60,9 @@ export class viewManager extends connect(store, MEDIA_CHANGE, SCREEN, SELECTION)
         return html`
             <div class="spinner" anillo fixed hidden></div>
             <menu-principal area="header"></menu-principal>
-            <form-test area="body"></form-test>
+            <form-scaneo area="body"></form-scaneo>
+            <scanner-id hidden></scanner-id>
+            <alert-control></alert-control>
         `;
     }
 
