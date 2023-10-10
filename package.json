@@ -1,7 +1,7 @@
 {
     "name": "escaneo-docs",
     "version": "1.0.0",
-    "description": "Escaneo Documentación Afiliados",
+    "description": "Digitalizacion HC",
     "main": "./src/index.js",
     "scripts": {
         "watch": "webpack --watch",
