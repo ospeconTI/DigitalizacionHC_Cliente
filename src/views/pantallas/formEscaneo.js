@@ -107,7 +107,7 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
                 padding: 1rem;
                 border-radius: 5%;
                 width: 95%;
-                height: 100%;
+                height: 97%;
             }
 
             h2 {
@@ -135,15 +135,13 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
             #scaner-item {
                 border: none;
             }
-            .input-number {
-            }
         `;
     }
     render() {
         return html`
             <div class="container">
                 <div class="form-scan">
-                    <h2>Vincular Documento</h2>
+                    <h2>Formulario:</h2>
                     <div class="input">
                         <input id="1" @input="${this.handleFirstInput}" />
                         <label for="1">Ingrese el DNI del Afiliado</label>
