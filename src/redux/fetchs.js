@@ -11,7 +11,6 @@ const expedienteOdataFactory = ODataFetchFactory({
     domain: webApiExpedientes,
 });
 
-export const loginFetch = fetchFactory(webApi, "LoginOS");
-export const logonFetch = ODataEntity(expedienteOdataFactory, "Logon");
-export const recuperoFetch = ODataEntity(expedienteOdataFactory, "PedirRecupero");
-export const cambiarPasswordFetch = ODataEntity(expedienteOdataFactory, "CambiarPassword");
+export const autorizacionFetch = fetchFactory(webApi, "Autorizacion");
+export const autorizacionAceptarUsuarioFetch = fetchFactory(webApi, "Autorizacion/AceptarUsuario");
+export const acceptFetch = fetchFactory(webApi, "Autorizacion/Accept");

@@ -10,17 +10,21 @@ import { logo } from "@brunomon/template-lit/src/views/css/logo";
 import { select } from "@brunomon/template-lit/src/views/css/select";
 import { button } from "@brunomon/template-lit/src/views/css/button";
 import { MENU, RIGHT, PERSON } from "../../../assets/icons/svgs";
-import { logout } from "../../redux/autorizacion/actions";
+import { autorizacion, logout } from "../../redux/autorizacion/actions";
 import { gesturesController } from "@brunomon/template-lit/src/views/controllers/gesturesController";
 import { selection } from "../../redux/ui/actions";
 import { getID } from "../../redux/scan/actions";
+import { set } from "../../redux/miPerfil/actions";
 
 const MEDIA_CHANGE = "ui.media.timeStamp";
 const SELECTION = "ui.menu.timeStamp";
 const SCREEN = "screen.timeStamp";
-const USUARIO = "autorizacion.loginTimeStamp";
+const AUTORIZACION_OK = "autorizacion.timeStamp";
+const AUTORIZACION_FALLA = "autorizacion.errorTimeStamp";
+const LOGUEAR = "ui.loguearConNuevoUsuarioTimeStamp";
+const PERFIL_ACTUAL = "miPerfil.timeStamp";
 
-export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO, SELECTION)(LitElement) {
+export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, SELECTION, AUTORIZACION_OK, AUTORIZACION_FALLA, LOGUEAR, PERFIL_ACTUAL)(LitElement) {
     constructor() {
         super();
         this.area = "header";
@@ -33,6 +37,37 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
         this.selectedOption[this.defaultOption] = true;
 
         const gestures = new gesturesController(this, this.gestos);
+        this.profile = "ACCEDER";
+        this.popUp = null;
+        this.logueado = false;
+
+        window.addEventListener(
+            "message",
+            (e) => {
+                var origin = e.origin;
+                if (origin == AUTHENTICATION_URL) {
+                    try {
+                        this.popUp.close();
+                        document.getElementsByName("iframeLogin")[0].style.display = "none";
+                        const profile = this.parseJwt(e.data);
+                        if (profile.exp < new Date().getTime() / 1000) {
+                            store.dispatch(showConfirm("Control de Accesos", "Su permiso ha expirado, ¿ quiere actualizalo ?", loguearConNuevoUsuario(), null));
+                            return;
+                        } else {
+                            this.logueado = true;
+                            //mandar a autorizar ej:
+                            //store.dispatch(autorizacion(e.data));
+
+                            // poner este paso en AUTORIZACION_SUCCESS del metodo stateChanged
+                            store.dispatch(set(profile));
+                        }
+                    } catch (err) {
+                        console.log(err);
+                    }
+                }
+            },
+            false
+        );
     }
 
     static get styles() {
@@ -156,6 +191,41 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
             #version {
                 color: var(--on-primario-bajada);
             }
+
+            .popup {
+                position: absolute;
+                left: 0;
+                top: 100%;
+                background-color: var(--formulario);
+                color: var(--on-formulario);
+                display: none;
+                z-index: 1000;
+            }
+            #acceso {
+                position: relative;
+            }
+            #acceso[logueado]:hover .popup {
+                display: grid;
+            }
+            :host([media-size="small"]) #acceso[logueado] .popup {
+                display: grid;
+                background-color: var(--secundario);
+            }
+            :host([media-size="small"]) #acceso[logueado] .popup button {
+                color: var(--on-primario);
+                font-size: 0.8rem;
+                text-align: start;
+                padding: 0rem 0rem;
+            }
+            *[hidden] {
+                display: none;
+            }
+            .logo {
+                height: 7vh;
+                width: 7vh;
+                background-color: var(--on-primario);
+                border-radius: 50%;
+            }
         `;
     }
     render() {
@@ -179,6 +249,26 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
                     <div>${PERSON}</div>
                     <div class="justify-self-start">Login</div>
                 </button>
+                <button link ?selected="${this.selectedOption[0]}" @click=${this.click} .option=${"opcion0"}>Opcion 0</button>
+                <button link ?selected="${this.selectedOption[1]}" @click=${this.click} .option=${"opcion1"}>Opcion 1</button>
+                <button link ?selected="${this.selectedOption[2]}" @click=${this.click} .option=${"opcion2"}>Opcion 2</button>
+                <div id="acceso" ?logueado="${this.logueado}">
+                    <button link etiqueta ?selected="${this.selectedOption[2]}" @click=${this.abrir} .option=${"log"}>
+                        <div>${PERSON}</div>
+                        <div class="justify-self-start">${this.profile}</div>
+                    </button>
+                    <div class="grid popup">
+                        <button flat="" action="" @click=${this.abrirForzado}>
+                            <div>Acceder con otro usuario</div>
+                        </button>
+                        <button flat="" action="" @click=${this.miPerfil} ?hidden="${!this.usuarioActivo}">
+                            <div>Mi Perfil</div>
+                        </button>
+                        <button flat="" action="" @click=${this.salir}>
+                            <div>Salir</div>
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
     }
@@ -221,9 +311,43 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
 
         store.dispatch(goTo(e.currentTarget.option));
     }
+    parseJwt(token) {
+        var base64Url = token.split(".")[1];
+        var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        var jsonPayload = decodeURIComponent(
+            window
+                .atob(base64)
+                .split("")
+                .map(function (c) {
+                    return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+                })
+                .join("")
+        );
+
+        return JSON.parse(jsonPayload);
+    }
+
+    abrir(e) {
+        if (this.profile == "ACCEDER") {
+            document.getElementsByName("iframeLogin")[0].style.display = "";
+            this.popUp = window.open(AUTHENTICATION_URL + "/auth/index.html", "iframeLogin");
+        }
+    }
+    abrirForzado(e) {
+        document.getElementsByName("iframeLogin")[0].style.display = "";
+        this.popUp = window.open(AUTHENTICATION_URL + "/auth/index.html?nuevo=true", "iframeLogin");
+        store.dispatch(goTo("main"));
+    }
+
+    salir() {
+        this.profile = "ACCEDER";
+        this.logueado = false;
+        store.dispatch(goTo("main"));
+    }
 
     firstUpdated(changedProperties) {
         this.opciones = this.shadowRoot.querySelector("#opciones");
+        this.abrir();
     }
 
     stateChanged(state, name) {
@@ -235,10 +359,20 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
                 this.hidden = false;
             }
         }
-        if (name == USUARIO) {
-            if (state.autorizacion.usuario.Profiles && state.autorizacion.usuario.Profiles.length != 0) {
-                this.usuario = state.autorizacion.usuario;
-            }
+
+        if (name == AUTORIZACION_OK) {
+        }
+
+        if (name == AUTORIZACION_FALLA) {
+        }
+
+        if (name == LOGUEAR) {
+            this.abrirForzado();
+        }
+        if (name == PERFIL_ACTUAL) {
+            this.profile = state.miPerfil.perfil.family_name + " " + state.miPerfil.perfil.given_name;
+            this.update();
+            store.dispatch(goTo("main"));
         }
     }
 
