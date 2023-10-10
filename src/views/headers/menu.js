@@ -245,13 +245,6 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, SELECTIO
 
                 <button link ?selected="${this.selectedOption[0]}" @click=${this.click} .option=${"scanId"}>Scanner ID</button>
 
-                <button link etiqueta ?selected="${this.selectedOption[1]}" @click=${this.click} .option=${"opcion3"}>
-                    <div>${PERSON}</div>
-                    <div class="justify-self-start">Login</div>
-                </button>
-                <button link ?selected="${this.selectedOption[0]}" @click=${this.click} .option=${"opcion0"}>Opcion 0</button>
-                <button link ?selected="${this.selectedOption[1]}" @click=${this.click} .option=${"opcion1"}>Opcion 1</button>
-                <button link ?selected="${this.selectedOption[2]}" @click=${this.click} .option=${"opcion2"}>Opcion 2</button>
                 <div id="acceso" ?logueado="${this.logueado}">
                     <button link etiqueta ?selected="${this.selectedOption[2]}" @click=${this.abrir} .option=${"log"}>
                         <div>${PERSON}</div>
