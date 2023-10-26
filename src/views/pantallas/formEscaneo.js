@@ -3,7 +3,7 @@
 import { html, LitElement, css } from "lit";
 import { store } from "../../redux/store";
 import { connect } from "@brunomon/helpers/connect";
-import { SCAN, VER } from "../../../assets/icons/svgs";
+import { ADD, CANCEL, SCAN, VER, SAVE } from "../../../assets/icons/svgs";
 import { input } from "@brunomon/template-lit/src/views/css/input";
 import { button } from "@brunomon/template-lit/src/views/css/button";
 import { select } from "@brunomon/template-lit/src/views/css/select";
@@ -21,6 +21,7 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
         this.documento1 = "";
         this.documento2 = "x";
         this.verificado = false;
+        this.pdf = "";
         this.data = [
             {
                 orden: 10,
@@ -124,6 +125,7 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
             }
             button {
                 margin: auto;
+                border-radius: 50%;
             }
             #scan:active {
                 transform: scale(0.9);
@@ -132,13 +134,35 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
                 margin-bottom: 0.2rem;
             }
 
-            #scaner-item {
+            #alert-dialog {
+                color: var(--on-formulario);
+                background: var(--formulario);
+                text-align: center;
+                height: 100vh;
+                width: 70vw;
                 border: none;
+            }
+            #alert-dialog::backdrop {
+                background: linear-gradient(#000d, #000a);
+            }
+
+            #pdf {
+                width: 70%;
+                height: 84%;
             }
         `;
     }
     render() {
         return html`
+            <dialog id="alert-dialog">
+                <h2>Previsualización del Documento</h2>
+                <!--<iframe id="pdf" src=${this.pdf}></iframe>-->
+                <iframe id="pdf" src=https://amparostest.uocra.net/AmparosImagenes/getImagen/%7C759%7C7bceebe6-32f7-491a-a96e-eb112c7ef43e.pdf></iframe>
+                <div class="botonera">
+                    <button raised id="cancelar" @click="${this.cancelarDialog}">Cancelar</button>
+                    <button raised id="grabar" @click="${this.guardar}">Grabar</button>
+                </div>
+            </dialog>
             <div class="container">
                 <div class="form-scan">
                     <h2>Formulario:</h2>
@@ -191,15 +215,14 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
                                     <div class="cell">${item.descripcion}</div>
                                     <div class="cell">${item.descripcion}</div>
                                     <div class="cell end">
-                                        <button id="scaner-item">
-                                            <div>${VER}</div>
-                                        </button>
+                                        <button @click="${this.mostrarModal}"></button>
                                     </div>
                                 </div>
                             `
                         )}
                     </div>
                 </div>
+                <!--<iframe id="pdf" src=${this.pdf} ?hidden=${this.pdf == ""}></iframe>-->
             </div>
         `;
     }
@@ -207,6 +230,21 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
         /*   store.dispatch(showAlert("Scanner", "Scaneando documento, aguarde")); */
         this.pdf = "";
         store.dispatch(scan());
+        this.mostrarModal();
+    }
+
+    mostrarModal = () => {
+        this.shadowRoot.getElementById("alert-dialog").showModal();
+    };
+
+    cancelarDialog() {
+        let botonCancelar = this.shadowRoot.getElementById("cancel");
+        this.shadowRoot.getElementById("alert-dialog").close();
+    }
+
+    guardar() {
+        let botonGrabar = this.shadowRoot.getElementById("grabar");
+        this.shadowRoot.getElementById("alert-dialog").close();
     }
 
     stateChanged(state, name) {
@@ -222,7 +260,6 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
                 imagen: state.scan.image,
                 tipo: "application/pdf",
             };
-            this._comprobante.value = state.scan.imageTimeStamp + ".pdf";
         }
         if (name == SCAN_ERROR) {
             store.dispatch(showAlert("Error!", state.scan.errorMessage));
@@ -232,6 +269,7 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
     configurar(e) {
         store.dispatch(getID());
     }
+
     handleFirstInput(event) {
         this.documento1 = event.target.value;
         this.verificado = this.documento == event.target.value;
@@ -259,6 +297,9 @@ export class formScaneo extends connect(store, SCAN_ERROR, SCAN_OK)(LitElement) 
             verificado: {
                 type: Boolean,
                 reflect: true,
+            },
+            pdf: {
+                type: String,
             },
         };
     }
